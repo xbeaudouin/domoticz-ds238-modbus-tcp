@@ -1,18 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# SolarEdge ModbusTCP
+# DS238-2 D/ZN ModbusTCP
 #
+# Source:  https://github.com/xbeaudouin/domoticz-ds238-modbus-tcp
+# Author:  Xavier Beaudouin (https://oav.net/)
+# License: MIT
+#
+# Based on the work of :
 # Source:  https://github.com/addiejanssen/domoticz-solaredge-modbustcp-plugin
 # Author:  Addie Janssen (https://addiejanssen.com)
 # License: MIT
 #
 
 """
-<plugin key="SolarEdge_ModbusTCP" name="SolarEdge ModbusTCP" author="Addie Janssen" version="1.0.6" externallink="https://github.com/addiejanssen/domoticz-solaredge-modbustcp-plugin">
+<plugin key="DS238_ModbusTCP" name="DS238-2 D/ZN ModbusTCP" author="Xavier Beaudouin" version="0.0.1" externallink="https://github.com/xbeaudouin/domoticz-ds238-modbus-tcp">
     <params>
-        <param field="Address" label="Inverter IP Address" width="150px" required="true" />
-        <param field="Port" label="Inverter Port Number" width="100px" required="true" default="502" />
+        <param field="Address" label="IP Address" width="150px" required="true" />
+        <param field="Port" label="Port Number" width="100px" required="true" default="502" />
         <param field="Mode1" label="Add missing devices" width="100px" required="true" default="Yes" >
             <options>
                 <option label="Yes" value="Yes" default="true" />
@@ -21,12 +26,14 @@
         </param>
         <param field="Mode2" label="Interval" width="100px" required="true" default="5" >
             <options>
-                <option label="5  seconds" value="5" default="true" />
-                <option label="10 seconds" value="10" />
+                <option label="5  seconds" value="5" />
+                <option label="10 seconds" value="10" default="true" />
                 <option label="20 seconds" value="20" />
                 <option label="30 seconds" value="30" />
                 <option label="60 seconds" value="60" />
             </options>
+        </param>
+        <param field="Mode3" label="Modbus address" width="100px" required="true" default="1" />
         </param>
         <param field="Mode5" label="Log level" width="100px">
             <options>
