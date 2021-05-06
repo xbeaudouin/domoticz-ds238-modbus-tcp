@@ -34,7 +34,6 @@
             </options>
         </param>
         <param field="Mode3" label="Modbus address" width="100px" required="true" default="1" />
-        </param>
         <param field="Mode5" label="Log level" width="100px">
             <options>
                 <option label="Normal" value="Normal" default="true" />
