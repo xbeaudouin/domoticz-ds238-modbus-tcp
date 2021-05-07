@@ -150,7 +150,7 @@ class BasePlugin:
 
         # Export Energy
         data = client.read_holding_registers(0x8, 2)
-        Domoticz.Debug("Data from register 0: "+str(data))
+        Domoticz.Debug("Data from register 0x8: "+str(data))
         # Unsigned 32 
         decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
@@ -162,7 +162,7 @@ class BasePlugin:
 
         # Import Energy
         data = client.read_holding_registers(0xA, 2)
-        Domoticz.Debug("Data from register 0: "+str(data))
+        Domoticz.Debug("Data from register 0xA: "+str(data))
         # Unsigned 32 
         decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
@@ -174,7 +174,7 @@ class BasePlugin:
 
         # Voltage
         data = client.read_holding_registers(0xC, 1)
-        Domoticz.Debug("Data from register 0: "+str(data))
+        Domoticz.Debug("Data from register 0xC: "+str(data))
         # Unsigned 16
         decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
@@ -186,7 +186,7 @@ class BasePlugin:
 
         # Current
         data = client.read_holding_registers(0xD, 1)
-        Domoticz.Debug("Data from register 0: "+str(data))
+        Domoticz.Debug("Data from register 0xD: "+str(data))
         # Unsigned 16
         decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
@@ -198,7 +198,7 @@ class BasePlugin:
 
         # Active Power
         data = client.read_holding_registers(0xE, 1)
-        Domoticz.Debug("Data from register 0: "+str(data))
+        Domoticz.Debug("Data from register 0xE: "+str(data))
         # Unsigned 16
         decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
@@ -210,7 +210,7 @@ class BasePlugin:
 
         # Reactive Power
         data = client.read_holding_registers(0xF, 1)
-        Domoticz.Debug("Data from register 0: "+str(data))
+        Domoticz.Debug("Data from register 0xF: "+str(data))
         # Unsigned 16
         decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
@@ -222,7 +222,7 @@ class BasePlugin:
 
         # Power Factor
         data = client.read_holding_registers(0x10, 1)
-        Domoticz.Debug("Data from register 0: "+str(data))
+        Domoticz.Debug("Data from register 0x10: "+str(data))
         # Unsigned 16
         decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
@@ -234,7 +234,7 @@ class BasePlugin:
 
         # Frequency
         data = client.read_holding_registers(0x11, 1)
-        Domoticz.Debug("Data from register 0: "+str(data))
+        Domoticz.Debug("Data from register 0x11: "+str(data))
         # Unsigned 16
         decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
