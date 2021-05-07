@@ -58,9 +58,6 @@ To add the inverter, go to `Setup` -> `Hardware` and add the counter:
 - Select `DS238-2 D/ZN ModbusTCP` from the `type` dropdown list.
 - Enter the IP address of the PW21 in the `Inverter IP Address` field.
 - Enter the port number (default: 502) of the inverter in the `Inverter Port Number` field.
-- Select `Yes` in the `Add missing devices` to create the devices when the counter is added. Select `No` after deleting unwanted devices. Leaving the option set to `Yes` will recreate the deleted devices once Domoticz is restarted.
-- Select an `Interval` (default: 10 seconds); this defines how often the plugin will collect the data from the counter. Short intervals will result in more accurate values and graphs, but also result in more network traffic and a higher workload for both Domoticz and the counter.
-- Optionally change the `Log level`; this defaults to `Normal`. When selecting `Extra`, the plugin will print all the information it received from the counter in the log.
 - Optionally turn on `Debug`; be aware: this will generate a lot of entries in the Domoticz log!
 - `Add` the counter.
 
