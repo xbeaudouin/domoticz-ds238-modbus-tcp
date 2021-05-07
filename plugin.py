@@ -7,7 +7,7 @@ Requirements:
     2. pymodbus AND pymodbusTCP
 """
 """
-<plugin key="DS238_ModbusTCP" name="DS238-2 D/ZN ModbusTCP" author="Xavier Beaudouin" version="0.0.1" externallink="https://github.com/xbeaudouin/domoticz-ds238-modbus-tcp">
+<plugin key="DS238_ModbusTCP" name="DS238-2 ZN/S ModbusTCP" author="Xavier Beaudouin" version="0.0.1" externallink="https://github.com/xbeaudouin/domoticz-ds238-modbus-tcp">
     <params>
         <param field="Address" label="IP Address" width="150px" required="true" />
         <param field="Port" label="Port Number" width="100px" required="true" default="502" />
@@ -72,12 +72,14 @@ class BasePlugin:
 
         # Create the devices if they does not exists
         if 1 not in Devices:
-            Domoticz.Device(Name="Total Energy",   Unit=1, Type=0x71, Subtype=0x0, Used=0).Create()
-            # Voir 0x107 / 0x30 ?
+            #Domoticz.Device(Name="Total Energy",   Unit=1, Type=0x71, Subtype=0x0, Used=0).Create()
+            Domoticz.Device(Name="Total Energy",   Unit=1, Type=248, Subtype=33, Used=0).Create()
         if 2 not in Devices:
-            Domoticz.Device(Name="Export Energy",  Unit=2, Type=0x71, Subtype=0x0, Used=0).Create()
+            #Domoticz.Device(Name="Export Energy",  Unit=2, Type=0x71, Subtype=0x0, Used=0).Create()
+            Domoticz.Device(Name="Export Energy",  Unit=2, Type=248, Subtype=33, Used=0).Create()
         if 3 not in Devices:
-            Domoticz.Device(Name="Import Energy",  Unit=3, Type=0x71, Subtype=0x0, Used=0).Create()
+            #Domoticz.Device(Name="Import Energy",  Unit=3, Type=0x71, Subtype=0x0, Used=0).Create()
+            Domoticz.Device(Name="Import Energy",  Unit=3, Type=248, Subtype=33, Used=0).Create()
         if 4 not in Devices:
             Domoticz.Device(Name="Voltage",        Unit=4, TypeName="Voltage", Used=0).Create()
         if 5 not in Devices:
@@ -95,12 +97,15 @@ class BasePlugin:
             Options = { "Custom": "1;Hz" }
             Domoticz.Device(Name="Frequency",      Unit=9, TypeName="Custom", Used=0, Options=Options).Create()
 
+        return
+
 
     def onStop(self):
         Domoticz.Log("onStop called")
 
     def onConnect(self, Connection, Status, Description):
         Domoticz.Log("onConnect called")
+        return
 
     def onMessage(self, Connection, Data):
         Domoticz.Log("onMessage called")
@@ -130,6 +135,116 @@ class BasePlugin:
             Devices[7].Update(1, "0")
             Devices[8].Update(1, "0")
             Devices[9].Update(1, "0")
+
+        # Total Energy
+        data = client.read_holding_registers(0, 2)
+        Domoticz.Debug("Data from register 0: "+str(data))
+        # Unsigned 32 
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        # Value
+        value = decoder.decode_32bit_int()
+        # Scale factor / 100
+        value = str ( round (value / 100, 3))
+        Domoticz.Debug("Value after conversion : "+str(value))
+        Devices[1].Update(1, value)
+
+        # Export Energy
+        data = client.read_holding_registers(0x8, 2)
+        Domoticz.Debug("Data from register 0: "+str(data))
+        # Unsigned 32 
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        # Value
+        value = decoder.decode_32bit_int()
+        # Scale factor / 100
+        value = str ( round (value / 100, 3))
+        Domoticz.Debug("Value after conversion : "+str(value))
+        Devices[2].Update(1, value)
+
+        # Import Energy
+        data = client.read_holding_registers(0xA, 2)
+        Domoticz.Debug("Data from register 0: "+str(data))
+        # Unsigned 32 
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        # Value
+        value = decoder.decode_32bit_int()
+        # Scale factor / 100
+        value = str ( round (value / 100, 3))
+        Domoticz.Debug("Value after conversion : "+str(value))
+        Devices[3].Update(1, value)
+
+        # Voltage
+        data = client.read_holding_registers(0xC, 1)
+        Domoticz.Debug("Data from register 0: "+str(data))
+        # Unsigned 16
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        # Value
+        value = decoder.decode_16bit_int()
+        # Scale factor / 10
+        value = str ( round (value / 10, 3))
+        Domoticz.Debug("Value after conversion : "+str(value))
+        Devices[4].Update(1, value)
+
+        # Current
+        data = client.read_holding_registers(0xD, 1)
+        Domoticz.Debug("Data from register 0: "+str(data))
+        # Unsigned 16
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        # Value
+        value = decoder.decode_16bit_int()
+        # Scale factor / 100
+        value = str ( round (value / 100, 3))
+        Domoticz.Debug("Value after conversion : "+str(value))
+        Devices[5].Update(1, value)
+
+        # Active Power
+        data = client.read_holding_registers(0xE, 1)
+        Domoticz.Debug("Data from register 0: "+str(data))
+        # Unsigned 16
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        # Value
+        value = decoder.decode_16bit_int()
+        # Scale factor / 100
+        #value = str ( round (value / 100, 3))
+        Domoticz.Debug("Value after conversion : "+str(value))
+        Devices[6].Update(1, str(value))
+
+        # Reactive Power
+        data = client.read_holding_registers(0xF, 1)
+        Domoticz.Debug("Data from register 0: "+str(data))
+        # Unsigned 16
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        # Value
+        value = decoder.decode_16bit_int()
+        # Scale factor / 100
+        #value = str ( round (value / 100, 3))
+        Domoticz.Debug("Value after conversion : "+str(value))
+        Devices[7].Update(1, str(value))
+
+        # Power Factor
+        data = client.read_holding_registers(0x10, 1)
+        Domoticz.Debug("Data from register 0: "+str(data))
+        # Unsigned 16
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        # Value
+        value = decoder.decode_16bit_int()
+        # Scale factor / 1000
+        value = str ( round (value / 1000, 3))
+        Domoticz.Debug("Value after conversion : "+str(value))
+        Devices[8].Update(1, value)
+
+        # Frequency
+        data = client.read_holding_registers(0x11, 1)
+        Domoticz.Debug("Data from register 0: "+str(data))
+        # Unsigned 16
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        # Value
+        value = decoder.decode_16bit_int()
+        # Scale factor / 100
+        value = str ( round (value / 100, 3))
+        Domoticz.Debug("Value after conversion : "+str(value))
+        Devices[9].Update(1, value)
+
+
 
 global _plugin
 _plugin = BasePlugin()
