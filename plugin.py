@@ -73,29 +73,34 @@ class BasePlugin:
         # Create the devices if they does not exists
         if 1 not in Devices:
             #Domoticz.Device(Name="Total Energy",   Unit=1, Type=0x71, Subtype=0x0, Used=0).Create()
-            Domoticz.Device(Name="Total Energy",   Unit=1, Type=248, Subtype=33, Used=0).Create()
+            #Domoticz.Device(Name="Total Energy",   Unit=1, Type=248, Subtype=33, Used=0).Create()
+            Domoticz.Device(Name="Total Energy",     Unit=1, Type=0xfa, Subtype=0x01, Used=0).Create()
         if 2 not in Devices:
             #Domoticz.Device(Name="Export Energy",  Unit=2, Type=0x71, Subtype=0x0, Used=0).Create()
-            Domoticz.Device(Name="Export Energy",  Unit=2, Type=248, Subtype=33, Used=0).Create()
+            #Domoticz.Device(Name="Export Energy",  Unit=2, Type=248, Subtype=33, Used=0).Create()
+            Domoticz.Device(Name="Export Energy",    Unit=2, Type=0xfa, Subtype=0x01, Used=0).Create()
         if 3 not in Devices:
             #Domoticz.Device(Name="Import Energy",  Unit=3, Type=0x71, Subtype=0x0, Used=0).Create()
-            Domoticz.Device(Name="Import Energy",  Unit=3, Type=248, Subtype=33, Used=0).Create()
+            #Domoticz.Device(Name="Import Energy",  Unit=3, Type=248, Subtype=33, Used=0).Create()
+            Domoticz.Device(Name="Import Energy",    Unit=3, Type=0xfa, Subtype=0x01, Used=0).Create()
         if 4 not in Devices:
-            Domoticz.Device(Name="Voltage",        Unit=4, TypeName="Voltage", Used=0).Create()
+            Domoticz.Device(Name="Voltage",          Unit=4, TypeName="Voltage", Used=0).Create()
         if 5 not in Devices:
-            Domoticz.Device(Name="Current",        Unit=5, TypeName="Current (Single)", Used=0).Create()
+            Domoticz.Device(Name="Current",          Unit=5, TypeName="Current (Single)", Used=0).Create()
         if 6 not in Devices:
             Options = { "Custom": "1;W" }
-            Domoticz.Device(Name="Active Power",   Unit=6, TypeName="Custom", Used=0, Options=Options).Create()
+            Domoticz.Device(Name="Active Power",     Unit=6, TypeName="Custom", Used=0, Options=Options).Create()
         if 7 not in Devices:
             Options = { "Custom": "1;VAr" }
-            Domoticz.Device(Name="Reactive Power", Unit=7, TypeName="Custom", Used=0, Options=Options).Create()
+            Domoticz.Device(Name="Reactive Power",   Unit=7, TypeName="Custom", Used=0, Options=Options).Create()
         if 8 not in Devices:
             Options = { "Custom": "1;PF" }
-            Domoticz.Device(Name="Power Factor",   Unit=8, TypeName="Custom", Used=0, Options=Options).Create()
+            Domoticz.Device(Name="Power Factor",     Unit=8, TypeName="Custom", Used=0, Options=Options).Create()
         if 9 not in Devices:
             Options = { "Custom": "1;Hz" }
-            Domoticz.Device(Name="Frequency",      Unit=9, TypeName="Custom", Used=0, Options=Options).Create()
+            Domoticz.Device(Name="Frequency",        Unit=9, TypeName="Custom", Used=0, Options=Options).Create()
+        if 10 not in Devices:
+            Domoticz.Device(Name="Total Power Meter",Unit=10,Type=0xfa, Subtype=0x01, Used=0).Create()
 
         return
 
@@ -135,6 +140,15 @@ class BasePlugin:
             Devices[7].Update(1, "0")
             Devices[8].Update(1, "0")
             Devices[9].Update(1, "0")
+            Devices[10].Update(1, "0")
+
+        # 3 counters
+        total_e = "0"
+        export_e = "0"
+        import_e = "0"
+        export_w = 0
+        import_w = 0
+        power = "0"
 
         # Total Energy
         data = client.read_holding_registers(0, 2)
@@ -144,9 +158,9 @@ class BasePlugin:
         # Value
         value = decoder.decode_32bit_int()
         # Scale factor / 100
-        value = str ( round (value / 100, 3))
-        Domoticz.Debug("Value after conversion : "+str(value))
-        Devices[1].Update(1, value)
+        #value = str ( round (value / 100, 3))
+        #Domoticz.Debug("Value after conversion : "+str(value))
+        total_e = str(value)
 
         # Export Energy
         data = client.read_holding_registers(0x8, 2)
@@ -156,9 +170,9 @@ class BasePlugin:
         # Value
         value = decoder.decode_32bit_int()
         # Scale factor / 100
-        value = str ( round (value / 100, 3))
-        Domoticz.Debug("Value after conversion : "+str(value))
-        Devices[2].Update(1, value)
+        #value = str ( round (value / 100, 3))
+        #Domoticz.Debug("Value after conversion : "+str(value))
+        export_e = str(value)
 
         # Import Energy
         data = client.read_holding_registers(0xA, 2)
@@ -168,9 +182,9 @@ class BasePlugin:
         # Value
         value = decoder.decode_32bit_int()
         # Scale factor / 100
-        value = str ( round (value / 100, 3))
-        Domoticz.Debug("Value after conversion : "+str(value))
-        Devices[3].Update(1, value)
+        #value = str ( round (value / 100, 3))
+        #Domoticz.Debug("Value after conversion : "+str(value))
+        import_e = str(value)
 
         # Voltage
         data = client.read_holding_registers(0xC, 1)
@@ -181,7 +195,7 @@ class BasePlugin:
         value = decoder.decode_16bit_int()
         # Scale factor / 10
         value = str ( round (value / 10, 3))
-        Domoticz.Debug("Value after conversion : "+str(value))
+        #Domoticz.Debug("Value after conversion : "+str(value))
         Devices[4].Update(1, value)
 
         # Current
@@ -193,7 +207,7 @@ class BasePlugin:
         value = decoder.decode_16bit_int()
         # Scale factor / 100
         value = str ( round (value / 100, 3))
-        Domoticz.Debug("Value after conversion : "+str(value))
+        #Domoticz.Debug("Value after conversion : "+str(value))
         Devices[5].Update(1, value)
 
         # Active Power
@@ -205,8 +219,13 @@ class BasePlugin:
         value = decoder.decode_16bit_int()
         # Scale factor / 100
         #value = str ( round (value / 100, 3))
-        Domoticz.Debug("Value after conversion : "+str(value))
+        #Domoticz.Debug("Value after conversion : "+str(value))
         Devices[6].Update(1, str(value))
+        if value > 0.0:
+            import_w = value
+        if value < 0.0:
+            export_w = value
+        power = str(abs(value))
 
         # Reactive Power
         data = client.read_holding_registers(0xF, 1)
@@ -217,7 +236,7 @@ class BasePlugin:
         value = decoder.decode_16bit_int()
         # Scale factor / 100
         #value = str ( round (value / 100, 3))
-        Domoticz.Debug("Value after conversion : "+str(value))
+        #Domoticz.Debug("Value after conversion : "+str(value))
         Devices[7].Update(1, str(value))
 
         # Power Factor
@@ -229,7 +248,7 @@ class BasePlugin:
         value = decoder.decode_16bit_int()
         # Scale factor / 1000
         value = str ( round (value / 1000, 3))
-        Domoticz.Debug("Value after conversion : "+str(value))
+        #Domoticz.Debug("Value after conversion : "+str(value))
         Devices[8].Update(1, value)
 
         # Frequency
@@ -241,9 +260,15 @@ class BasePlugin:
         value = decoder.decode_16bit_int()
         # Scale factor / 100
         value = str ( round (value / 100, 3))
-        Domoticz.Debug("Value after conversion : "+str(value))
+        #Domoticz.Debug("Value after conversion : "+str(value))
         Devices[9].Update(1, value)
 
+
+        # Do insert data on counters 
+        Devices[1].Update(1, sValue=total_e+"0;0;0;0;"+power+";0")
+        Devices[2].Update(1, sValue=export_e+"0;0;0;0;"+str(abs(export_w))+";0")
+        Devices[3].Update(1, sValue=import_e+"0;0;0;0;"+str(abs(import_w))+";0")
+        Devices[10].Update(1, sValue=import_e+"0;0;"+export_e+"0;0;"+str(abs(import_w))+";"+str(abs(export_w)))
 
 
 global _plugin
