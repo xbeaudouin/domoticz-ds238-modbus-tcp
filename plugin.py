@@ -11,12 +11,6 @@ Requirements:
     <params>
         <param field="Address" label="IP Address" width="150px" required="true" />
         <param field="Port" label="Port Number" width="100px" required="true" default="502" />
-        <param field="Mode1" label="Add missing devices" width="100px" required="true" default="Yes" >
-            <options>
-                <option label="Yes" value="Yes" default="true" />
-                <option label="No" value="No" />
-            </options>
-        </param>
         <param field="Mode3" label="Modbus address" width="100px" required="true" default="1" />
         <param field="Mode6" label="Debug" width="100px">
             <options>
@@ -62,7 +56,6 @@ class BasePlugin:
         except:
             Domoticz.Error("Warning ! Dependancies could not be checked !")
 
-        Domoticz.Log("Started !")
         # Parse parameters
         
         # Debug
@@ -73,16 +66,34 @@ class BasePlugin:
 
         self.IPAddress = Parameters["Address"]
         self.IPPort    = Parameters["Port"]
-        if Parameters["Mode1"] == "1":
-            self.AddMissing = 1
-        else:
-            self.AddMissing = 0
-
-        self.MBAddr     = int(Parameters["Mode3"])
+        self.MBAddr    = int(Parameters["Mode3"])
 
         Domoticz.Debug("Query IP " + self.IPAddress + ":" + str(self.IPPort) +" on device : "+str(self.MBAddr))
 
-        # Create the Domoticz.Devices() here.
+        # Create the devices if they does not exists
+        if 1 not in Devices:
+            Domoticz.Device(Name="Total Energy",   Unit=1, Type=0x71, Subtype=0x0, Used=0).Create()
+            # Voir 0x107 / 0x30 ?
+        if 2 not in Devices:
+            Domoticz.Device(Name="Export Energy",  Unit=2, Type=0x71, Subtype=0x0, Used=0).Create()
+        if 3 not in Devices:
+            Domoticz.Device(Name="Import Energy",  Unit=3, Type=0x71, Subtype=0x0, Used=0).Create()
+        if 4 not in Devices:
+            Domoticz.Device(Name="Voltage",        Unit=4, TypeName="Voltage", Used=0).Create()
+        if 5 not in Devices:
+            Domoticz.Device(Name="Current",        Unit=5, TypeName="Current (Single)", Used=0).Create()
+        if 6 not in Devices:
+            Options = { "Custom": "1;W" }
+            Domoticz.Device(Name="Active Power",   Unit=6, TypeName="Custom", Used=0, Options=Options).Create()
+        if 7 not in Devices:
+            Options = { "Custom": "1;VAr" }
+            Domoticz.Device(Name="Reactive Power", Unit=7, TypeName="Custom", Used=0, Options=Options).Create()
+        if 8 not in Devices:
+            Options = { "Custom": "1;PF" }
+            Domoticz.Device(Name="Power Factor",   Unit=8, TypeName="Custom", Used=0, Options=Options).Create()
+        if 9 not in Devices:
+            Options = { "Custom": "1;Hz" }
+            Domoticz.Device(Name="Frequency",      Unit=9, TypeName="Custom", Used=0, Options=Options).Create()
 
 
     def onStop(self):
@@ -104,14 +115,21 @@ class BasePlugin:
         Domoticz.Log("onDisconnect called")
 
     def onHeartbeat(self):
-        Domoticz.Log("onHeartbeat called")
         Domoticz.Debug(" Interface : IP="+self.IPAddress +", Port="+str(self.IPPort)+" ID="+str(self.MBAddr))
         try:
             client = ModbusClient(host=self.IPAddress, port=self.IPPort, unit_id=self.MBAddr, auto_open=True, auto_close=True, timeout=2)
         except:
             Domoticz.Error("Error connecting to TCP/Interface on address : "+self.IPaddress+":"+str(self.IPPort))
-            # TODO: add for each devices
-            #Devices[1].Update(1, "0") # Set value to 0 (error)
+            # Set value to 0 -> Error on all devices
+            Devices[1].Update(1, "0")
+            Devices[2].Update(1, "0")
+            Devices[3].Update(1, "0")
+            Devices[4].Update(1, "0")
+            Devices[5].Update(1, "0")
+            Devices[6].Update(1, "0")
+            Devices[7].Update(1, "0")
+            Devices[8].Update(1, "0")
+            Devices[9].Update(1, "0")
 
 global _plugin
 _plugin = BasePlugin()
