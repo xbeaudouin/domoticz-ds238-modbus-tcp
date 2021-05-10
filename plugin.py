@@ -30,6 +30,7 @@ sys.path.append('/usr/local/lib/python3.5/dist-packages')
 sys.path.append('/usr/local/lib/python3.6/dist-packages')
 sys.path.append('/usr/local/lib/python3.7/dist-packages')
 sys.path.append('/usr/local/lib/python3.8/dist-packages')
+sys.path.append('/usr/local/lib/python3.9/dist-packages')
 
 import pymodbus
 
@@ -37,9 +38,70 @@ from pyModbusTCP.client import ModbusClient
 from pymodbus.constants import Endian
 from pymodbus.payload   import BinaryPayloadDecoder
 
+#
+# Domoticz shows graphs with intervals of 5 minutes.
+# When collecting information from the inverter more frequently than that, then it makes no sense to only show the last value.
+#
+# The Average class can be used to calculate the average value based on a sliding window of samples.
+# The number of samples stored depends on the interval used to collect the value from the inverter itself.
+#
+
+class Average:
+
+    def __init__(self):
+        self.samples = []
+        self.max_samples = 30
+
+    def set_max_samples(self, max):
+        self.max_samples = max
+        if self.max_samples < 1:
+            self.max_samples = 1
+
+    def update(self, new_value, scale = 0):
+        self.samples.append(new_value * (10 ** scale))
+        while (len(self.samples) > self.max_samples):
+            del self.samples[0]
+
+        Domoticz.Debug("Average: {} - {} values".format(self.get(), len(self.samples)))
+
+    def get(self):
+        return sum(self.samples) / len(self.samples)
+
+#
+# Domoticz shows graphs with intervals of 5 minutes.
+# When collecting information from the inverter more frequently than that, then it makes no sense to only show the last value.
+#
+# The Maximum class can be used to calculate the highest value based on a sliding window of samples.
+# The number of samples stored depends on the interval used to collect the value from the inverter itself.
+#
+
+class Maximum:
+
+    def __init__(self):
+        self.samples = []
+        self.max_samples = 30
+
+    def set_max_samples(self, max):
+        self.max_samples = max
+        if self.max_samples < 1:
+            self.max_samples = 1
+
+    def update(self, new_value, scale = 0):
+        self.samples.append(new_value * (10 ** scale))
+        while (len(self.samples) > self.max_samples):
+            del self.samples[0]
+
+        Domoticz.Debug("Maximum: {} - {} values".format(self.get(), len(self.samples)))
+
+    def get(self):
+        return max(self.samples)
+
+# Plugin itself
 class BasePlugin:
     #enabled = False
     def __init__(self):
+	# Default hearbeat is 10 seconds, then 30 samples for the 5 minutes
+	self.max_samples = 30
         return
 
     def onStart(self):
@@ -71,17 +133,12 @@ class BasePlugin:
         Domoticz.Debug("Query IP " + self.IPAddress + ":" + str(self.IPPort) +" on device : "+str(self.MBAddr))
 
         # Create the devices if they does not exists
+	# TODO: refactor this.
         if 1 not in Devices:
-            #Domoticz.Device(Name="Total Energy",   Unit=1, Type=0x71, Subtype=0x0, Used=0).Create()
-            #Domoticz.Device(Name="Total Energy",   Unit=1, Type=248, Subtype=33, Used=0).Create()
             Domoticz.Device(Name="Total Energy",     Unit=1, Type=0xfa, Subtype=0x01, Used=0).Create()
         if 2 not in Devices:
-            #Domoticz.Device(Name="Export Energy",  Unit=2, Type=0x71, Subtype=0x0, Used=0).Create()
-            #Domoticz.Device(Name="Export Energy",  Unit=2, Type=248, Subtype=33, Used=0).Create()
             Domoticz.Device(Name="Export Energy",    Unit=2, Type=0xfa, Subtype=0x01, Used=0).Create()
         if 3 not in Devices:
-            #Domoticz.Device(Name="Import Energy",  Unit=3, Type=0x71, Subtype=0x0, Used=0).Create()
-            #Domoticz.Device(Name="Import Energy",  Unit=3, Type=248, Subtype=33, Used=0).Create()
             Domoticz.Device(Name="Import Energy",    Unit=3, Type=0xfa, Subtype=0x01, Used=0).Create()
         if 4 not in Devices:
             Domoticz.Device(Name="Voltage",          Unit=4, TypeName="Voltage", Used=0).Create()
@@ -219,7 +276,12 @@ class BasePlugin:
         value = decoder.decode_16bit_int()
         # Scale factor / 100
         #value = str ( round (value / 100, 3))
-        #Domoticz.Debug("Value after conversion : "+str(value))
+        Domoticz.Debug("Value after conversion : "+str(value))
+	Domoticz.Debug("-> Calculating average")
+	m = Average()
+	m.update(value)
+	value = m.get()
+	Domotice.Debug(" = {}".format(value))
         Devices[6].Update(1, str(value))
         if value > 0.0:
             import_w = value
