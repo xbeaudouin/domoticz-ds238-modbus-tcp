@@ -100,8 +100,6 @@ class Maximum:
 class BasePlugin:
     #enabled = False
     def __init__(self):
-	# Default hearbeat is 10 seconds, then 30 samples for the 5 minutes
-	self.max_samples = 30
         return
 
     def onStart(self):
@@ -277,11 +275,11 @@ class BasePlugin:
         # Scale factor / 100
         #value = str ( round (value / 100, 3))
         Domoticz.Debug("Value after conversion : "+str(value))
-	Domoticz.Debug("-> Calculating average")
-	m = Average()
-	m.update(value)
-	value = m.get()
-	Domotice.Debug(" = {}".format(value))
+        Domoticz.Debug("-> Calculating average")
+        m = Average()
+        m.update(value)
+        value = m.get()
+        Domoticz.Debug(" = {}".format(value))
         Devices[6].Update(1, str(value))
         if value > 0.0:
             import_w = value
