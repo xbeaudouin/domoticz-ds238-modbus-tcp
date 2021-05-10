@@ -100,6 +100,19 @@ class Maximum:
 class BasePlugin:
     #enabled = False
     def __init__(self):
+        # Voltage for last 5 minutes
+        self.voltage=Average()
+        # Current for last 5 minutes
+        self.current=Average()
+        # Active power for last 5 minutes
+        self.active_power=Average()
+        # Reactive power for last 5 minutes
+        self.reactive_power=Average()
+        # Power factor for last 5 minutes
+        self.power_factor=Average()
+        # Frequency for last 5 minutes
+        self.frequency=Average()
+
         return
 
     def onStart(self):
@@ -131,7 +144,7 @@ class BasePlugin:
         Domoticz.Debug("Query IP " + self.IPAddress + ":" + str(self.IPPort) +" on device : "+str(self.MBAddr))
 
         # Create the devices if they does not exists
-	# TODO: refactor this.
+        # TODO: refactor this.
         if 1 not in Devices:
             Domoticz.Device(Name="Total Energy",     Unit=1, Type=0xfa, Subtype=0x01, Used=0).Create()
         if 2 not in Devices:
@@ -161,7 +174,7 @@ class BasePlugin:
 
 
     def onStop(self):
-        Domoticz.Log("onStop called")
+        Domoticz.Debugging(0)
 
     def onConnect(self, Connection, Status, Description):
         Domoticz.Log("onConnect called")
@@ -197,6 +210,7 @@ class BasePlugin:
             Devices[9].Update(1, "0")
             Devices[10].Update(1, "0")
 
+        # TODO: catch errors
         # 3 counters
         total_e = "0"
         export_e = "0"
@@ -212,9 +226,6 @@ class BasePlugin:
         decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
         value = decoder.decode_32bit_int()
-        # Scale factor / 100
-        #value = str ( round (value / 100, 3))
-        #Domoticz.Debug("Value after conversion : "+str(value))
         total_e = str(value)
 
         # Export Energy
@@ -224,9 +235,6 @@ class BasePlugin:
         decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
         value = decoder.decode_32bit_int()
-        # Scale factor / 100
-        #value = str ( round (value / 100, 3))
-        #Domoticz.Debug("Value after conversion : "+str(value))
         export_e = str(value)
 
         # Import Energy
@@ -236,9 +244,6 @@ class BasePlugin:
         decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
         value = decoder.decode_32bit_int()
-        # Scale factor / 100
-        #value = str ( round (value / 100, 3))
-        #Domoticz.Debug("Value after conversion : "+str(value))
         import_e = str(value)
 
         # Voltage
@@ -249,9 +254,13 @@ class BasePlugin:
         # Value
         value = decoder.decode_16bit_int()
         # Scale factor / 10
-        value = str ( round (value / 10, 3))
-        #Domoticz.Debug("Value after conversion : "+str(value))
-        Devices[4].Update(1, value)
+        value = round (value / 10, 3)
+        Domoticz.Debug("Value after conversion : "+str(value))
+        Domoticz.Debug("-> Calculating average")
+        self.voltage.update(value)
+        value = self.voltage.get()
+        Domoticz.Debug(" = {}".format(value))
+        Devices[4].Update(1, str(value))
 
         # Current
         data = client.read_holding_registers(0xD, 1)
@@ -261,9 +270,13 @@ class BasePlugin:
         # Value
         value = decoder.decode_16bit_int()
         # Scale factor / 100
-        value = str ( round (value / 100, 3))
-        #Domoticz.Debug("Value after conversion : "+str(value))
-        Devices[5].Update(1, value)
+        value = round (value / 100, 3)
+        Domoticz.Debug("Value after conversion : "+str(value))
+        Domoticz.Debug("-> Calculating average")
+        self.current.update(value)
+        value = self.current.get()
+        Domoticz.Debug(" = {}".format(value))
+        Devices[5].Update(1, str(value))
 
         # Active Power
         data = client.read_holding_registers(0xE, 1)
@@ -272,13 +285,10 @@ class BasePlugin:
         decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
         value = decoder.decode_16bit_int()
-        # Scale factor / 100
-        #value = str ( round (value / 100, 3))
         Domoticz.Debug("Value after conversion : "+str(value))
         Domoticz.Debug("-> Calculating average")
-        m = Average()
-        m.update(value)
-        value = m.get()
+        self.active_power.update(value)
+        value = self.active_power.get()
         Domoticz.Debug(" = {}".format(value))
         Devices[6].Update(1, str(value))
         if value > 0.0:
@@ -294,9 +304,11 @@ class BasePlugin:
         decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
         value = decoder.decode_16bit_int()
-        # Scale factor / 100
-        #value = str ( round (value / 100, 3))
-        #Domoticz.Debug("Value after conversion : "+str(value))
+        Domoticz.Debug("Value after conversion : "+str(value))
+        Domoticz.Debug("-> Calculating average")
+        self.reactive_power.update(value)
+        value = self.reactive_power.get()
+        Domoticz.Debug(" = {}".format(value))
         Devices[7].Update(1, str(value))
 
         # Power Factor
@@ -307,9 +319,13 @@ class BasePlugin:
         # Value
         value = decoder.decode_16bit_int()
         # Scale factor / 1000
-        value = str ( round (value / 1000, 3))
-        #Domoticz.Debug("Value after conversion : "+str(value))
-        Devices[8].Update(1, value)
+        value = round (value / 1000, 3)
+        Domoticz.Debug("Value after conversion : "+str(value))
+        Domoticz.Debug("-> Calculating average")
+        self.power_factor.update(value)
+        value = self.power_factor.get()
+        Domoticz.Debug(" = {}".format(value))
+        Devices[8].Update(1, str(value))
 
         # Frequency
         data = client.read_holding_registers(0x11, 1)
@@ -319,9 +335,13 @@ class BasePlugin:
         # Value
         value = decoder.decode_16bit_int()
         # Scale factor / 100
-        value = str ( round (value / 100, 3))
-        #Domoticz.Debug("Value after conversion : "+str(value))
-        Devices[9].Update(1, value)
+        value = round (value / 100, 3)
+        Domoticz.Debug("Value after conversion : "+str(value))
+        Domoticz.Debug("-> Calculating average")
+        self.frequency.update(value)
+        value = self.frequency.get()
+        Domoticz.Debug(" = {}".format(value))
+        Devices[9].Update(1, str(value))
 
 
         # Do insert data on counters 
