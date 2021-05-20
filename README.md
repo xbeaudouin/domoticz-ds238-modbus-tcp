@@ -1,6 +1,6 @@
-# Domoticz DS238-2 ModbusTCP plugin
+# Domoticz DS238-2 ZN/S ModbusTCP plugin
 
-A Domoticz plugin to collect data from Hiking DS238-2 D/ZN power meter ModbusTCP.
+A Domoticz plugin to collect data from Hiking DS238-2 ZN/S power meter ModbusTCP.
 
 ## Requirements
 
@@ -50,14 +50,14 @@ sudo service domoticz.sh restart
 
 ## Configuration in Domoticz
 
-Once the plugin is installed, a new hardware type will be available: `DS238-2 D/ZN ModbusTCP`.
+Once the plugin is installed, a new hardware type will be available: `DS238-2 ZN/S ModbusTCP`.
 
 To add the inverter, go to `Setup` -> `Hardware` and add the counter:
 
 - Enter a `name` for the counter.
-- Select `DS238-2 D/ZN ModbusTCP` from the `type` dropdown list.
-- Enter the IP address of the PW21 in the `Inverter IP Address` field.
-- Enter the port number (default: 502) of the inverter in the `Inverter Port Number` field.
+- Select `DS238-2 ZN/S ModbusTCP` from the `type` dropdown list.
+- Enter the IP address of the PW21 in the `IP Address` field.
+- Enter the port number (default: 502) of the PW21 in the `Port Number` field.
 - Optionally turn on `Debug`; be aware: this will generate a lot of entries in the Domoticz log!
 - `Add` the counter.
 
