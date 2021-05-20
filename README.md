@@ -162,3 +162,9 @@ In DDS238-2 ZN/SR model the relay can be switched by 0x001A register.
 
 The meter does not understand the 'write sigle register' function code (06h),
 only the 'write multiple registers' function code (10h).
+
+## Credits
+
+Some part of the code has been taken from SolarEgde Modbus TCP Plugin. Thanks !
+https://github.com/addiejanssen/domoticz-solaredge-modbustcp-plugin/
+
