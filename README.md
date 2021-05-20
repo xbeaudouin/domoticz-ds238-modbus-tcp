@@ -79,7 +79,21 @@ sudo service domoticz.sh restart
 ```
 ## ScreenShots
 
-TBD
+Hardware page showing a configured PW21 to get data from a DS238-2 ZN/S
+
+![](screenshots/Hardware.png)
+
+The devices page show all Domoticz devices that were created for it.
+
+![](screenshots/Devices.png)
+
+The voltage graphs.
+
+![](screenshots/Voltage.png)
+
+Total power meter with Return energy (usefull for PV/Wind turbine generators)
+
+![](screenshots/TotalPower.png)
 
 ## Documentation about the registers used.
 
