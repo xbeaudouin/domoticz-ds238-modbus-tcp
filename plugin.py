@@ -7,7 +7,7 @@ Requirements:
     2. pymodbus AND pymodbusTCP
 """
 """
-<plugin key="DS238_ModbusTCP" name="DS238-2 ZN/S ModbusTCP" author="Xavier Beaudouin" version="0.0.1" externallink="https://github.com/xbeaudouin/domoticz-ds238-modbus-tcp">
+<plugin key="DS238_ModbusTCP" name="DS238-2 ZN/S ModbusTCP" author="Xavier Beaudouin" version="0.0.2" externallink="https://github.com/xbeaudouin/domoticz-ds238-modbus-tcp">
     <params>
         <param field="Address" label="IP Address" width="150px" required="true" />
         <param field="Port" label="Port Number" width="100px" required="true" default="502" />
@@ -31,6 +31,7 @@ sys.path.append('/usr/local/lib/python3.6/dist-packages')
 sys.path.append('/usr/local/lib/python3.7/dist-packages')
 sys.path.append('/usr/local/lib/python3.8/dist-packages')
 sys.path.append('/usr/local/lib/python3.9/dist-packages')
+sys.path.append('/usr/local/lib/python3.10/dist-packages')
 
 import pymodbus
 
@@ -220,41 +221,44 @@ class BasePlugin:
         power = "0"
 
         # Total Energy
-        data = client.read_holding_registers(0, 2)
-        Domoticz.Debug("Data from register 0: "+str(data))
-        # Unsigned 32 
-        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
-        # Value
-        value = decoder.decode_32bit_int()
-        total_e = str(value)
+        #data = client.read_holding_registers(0, 2)
+        #Domoticz.Debug("Data from register 0: "+str(data))
+        ## Unsigned 32 
+        #decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        ## Value
+        #value = decoder.decode_32bit_int()
+        #total_e = str(value)
+        total_e = str(getmodbus32(0, client))
 
         # Export Energy
-        data = client.read_holding_registers(0x8, 2)
-        Domoticz.Debug("Data from register 0x8: "+str(data))
+        #data = client.read_holding_registers(0x8, 2)
+        #Domoticz.Debug("Data from register 0x8: "+str(data))
         # Unsigned 32 
-        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        #decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
-        value = decoder.decode_32bit_int()
-        export_e = str(value)
+        #value = decoder.decode_32bit_int()
+        #export_e = str(value)
+        export_e = str(getmodbus32(0x8, client))
 
         # Import Energy
-        data = client.read_holding_registers(0xA, 2)
-        Domoticz.Debug("Data from register 0xA: "+str(data))
-        # Unsigned 32 
-        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
-        # Value
-        value = decoder.decode_32bit_int()
-        import_e = str(value)
+        #data = client.read_holding_registers(0xA, 2)
+        #Domoticz.Debug("Data from register 0xA: "+str(data))
+        ## Unsigned 32 
+        #decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        ## Value
+        #value = decoder.decode_32bit_int()
+        #import_e = str(value)
+        import_e = str(getmodbus32(0xA, client))
 
         # Voltage
-        data = client.read_holding_registers(0xC, 1)
-        Domoticz.Debug("Data from register 0xC: "+str(data))
+        #data = client.read_holding_registers(0xC, 1)
+        #Domoticz.Debug("Data from register 0xC: "+str(data))
         # Unsigned 16
-        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        #decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
-        value = decoder.decode_16bit_int()
+        #value = decoder.decode_16bit_int()
         # Scale factor / 10
-        value = round (value / 10, 3)
+        value = round (getmodbus16(0xC,client) / 10, 3)
         Domoticz.Debug("Value after conversion : "+str(value))
         Domoticz.Debug("-> Calculating average")
         self.voltage.update(value)
@@ -263,14 +267,14 @@ class BasePlugin:
         Devices[4].Update(1, str(value))
 
         # Current
-        data = client.read_holding_registers(0xD, 1)
-        Domoticz.Debug("Data from register 0xD: "+str(data))
+        #data = client.read_holding_registers(0xD, 1)
+        #Domoticz.Debug("Data from register 0xD: "+str(data))
         # Unsigned 16
-        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        #decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
-        value = decoder.decode_16bit_int()
+        #value = decoder.decode_16bit_int()
         # Scale factor / 100
-        value = round (value / 100, 3)
+        value = round (getmodbus16(0xD,client) / 100, 3)
         Domoticz.Debug("Value after conversion : "+str(value))
         Domoticz.Debug("-> Calculating average")
         self.current.update(value)
@@ -279,14 +283,15 @@ class BasePlugin:
         Devices[5].Update(1, str(value))
 
         # Active Power
-        data = client.read_holding_registers(0xE, 1)
-        Domoticz.Debug("Data from register 0xE: "+str(data))
+        #data = client.read_holding_registers(0xE, 1)
+        #Domoticz.Debug("Data from register 0xE: "+str(data))
         # Unsigned 16
-        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        #decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
-        value = decoder.decode_16bit_int()
-        Domoticz.Debug("Value after conversion : "+str(value))
-        Domoticz.Debug("-> Calculating average")
+        #value = decoder.decode_16bit_int()
+        #Domoticz.Debug("Value after conversion : "+str(value))
+        #Domoticz.Debug("-> Calculating average")
+        value = getmodbus16(0xE, client)
         self.active_power.update(value)
         value = self.active_power.get()
         Domoticz.Debug(" = {}".format(value))
@@ -298,28 +303,29 @@ class BasePlugin:
         power = str(abs(value))
 
         # Reactive Power
-        data = client.read_holding_registers(0xF, 1)
-        Domoticz.Debug("Data from register 0xF: "+str(data))
+        #data = client.read_holding_registers(0xF, 1)
+        #Domoticz.Debug("Data from register 0xF: "+str(data))
         # Unsigned 16
-        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
-        # Value
-        value = decoder.decode_16bit_int()
-        Domoticz.Debug("Value after conversion : "+str(value))
-        Domoticz.Debug("-> Calculating average")
+        #decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        ## Value
+        #value = decoder.decode_16bit_int()
+        #Domoticz.Debug("Value after conversion : "+str(value))
+        #Domoticz.Debug("-> Calculating average")
+        value = getmodbus16(0xF, client)
         self.reactive_power.update(value)
         value = self.reactive_power.get()
         Domoticz.Debug(" = {}".format(value))
         Devices[7].Update(1, str(value))
 
         # Power Factor
-        data = client.read_holding_registers(0x10, 1)
-        Domoticz.Debug("Data from register 0x10: "+str(data))
+        #data = client.read_holding_registers(0x10, 1)
+        #Domoticz.Debug("Data from register 0x10: "+str(data))
         # Unsigned 16
-        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        #decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
         # Value
-        value = decoder.decode_16bit_int()
+        #value = decoder.decode_16bit_int()
         # Scale factor / 1000
-        value = round (value / 1000, 3)
+        value = round (getmodbus16(0x10,client) / 1000, 3)
         Domoticz.Debug("Value after conversion : "+str(value))
         Domoticz.Debug("-> Calculating average")
         self.power_factor.update(value)
@@ -328,14 +334,14 @@ class BasePlugin:
         Devices[8].Update(1, str(value))
 
         # Frequency
-        data = client.read_holding_registers(0x11, 1)
-        Domoticz.Debug("Data from register 0x11: "+str(data))
+        #data = client.read_holding_registers(0x11, 1)
+        #Domoticz.Debug("Data from register 0x11: "+str(data))
         # Unsigned 16
-        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
-        # Value
-        value = decoder.decode_16bit_int()
+        #decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        ## Value
+        #value = decoder.decode_16bit_int()
         # Scale factor / 100
-        value = round (value / 100, 3)
+        value = round (getmodbus16(0x11, client) / 100, 3)
         Domoticz.Debug("Value after conversion : "+str(value))
         Domoticz.Debug("-> Calculating average")
         self.frequency.update(value)
@@ -400,3 +406,31 @@ def DumpConfigToLog():
         Domoticz.Debug("Device sValue:   '" + Devices[x].sValue + "'")
         Domoticz.Debug("Device LastLevel: " + str(Devices[x].LastLevel))
     return
+
+# get Modbus 32 bits values
+def getmodbus32(register, client):
+    try:
+        data = client.read_holding_registers(register, 2)
+        Domoticz.Debug("Data from register "+str(register)+": "+str(data))
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        value = decoder.decode_32bit_int()
+        return value
+    except:
+        Domoticz.Error("Error getting data from "+str(register))
+        return 0
+
+# get Modbug 16 bits values
+def getmodbus16(register, client):
+    try:
+        data = client.read_holding_registers(register, 1)
+        Domoticz.Debug("Data from register "+str(register)+": "+str(data))
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        value = decoder.decode_16bit_int()
+        return value
+    except:
+        Domoticz.Error("Error getting data from "+str(register))
+        return 0
+
+
+
+
