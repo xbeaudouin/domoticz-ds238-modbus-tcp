@@ -7,7 +7,7 @@ Requirements:
     2. pymodbus AND pymodbusTCP
 """
 """
-<plugin key="DS238_ModbusTCP" name="DS238-2 ZN/S ModbusTCP" author="Xavier Beaudouin" version="0.0.2" externallink="https://github.com/xbeaudouin/domoticz-ds238-modbus-tcp">
+<plugin key="DS238_ModbusTCP" name="DS238-2 ZN/S ModbusTCP" author="Xavier Beaudouin" version="0.0.3" externallink="https://github.com/xbeaudouin/domoticz-ds238-modbus-tcp">
     <params>
         <param field="Address" label="IP Address" width="150px" required="true" />
         <param field="Port" label="Port Number" width="100px" required="true" default="502" />
@@ -329,30 +329,40 @@ def DumpConfigToLog():
 # get Modbus 32 bits values
 def getmodbus32(register, client):
     value = 0
-    attempts = 0
-    while attempts < 2:
+    try:
+        data = client.read_holding_registers(register, 2)
+        Domoticz.Debug("Data from register "+str(register)+": "+str(data))
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        value = decoder.decode_32bit_int()
+    except:
+        Domoticz.Error("Error getting data from "+str(register) + ", try 1")
         try:
             data = client.read_holding_registers(register, 2)
             Domoticz.Debug("Data from register "+str(register)+": "+str(data))
             decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
             value = decoder.decode_32bit_int()
         except:
-            Domoticz.Error("Error getting data from "+str(register) + ", try "+ str(attempts))
-            attempts += 1
+            Domoticz.Error("Error getting data from "+str(register) + ", try 2")
+
     return value
 
 # get Modbug 16 bits values
 def getmodbus16(register, client):
     value = 0
-    attempts = 0
-    while attempts < 2:
+    try:
+        data = client.read_holding_registers(register, 1)
+        Domoticz.Debug("Data from register "+str(register)+": "+str(data))
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        value = decoder.decode_16bit_int()
+    except:
+        Domoticz.Error("Error getting data from "+str(register) + ", try 1")
         try:
             data = client.read_holding_registers(register, 1)
             Domoticz.Debug("Data from register "+str(register)+": "+str(data))
             decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
             value = decoder.decode_16bit_int()
         except:
-            Domoticz.Error("Error getting data from "+str(register) + ", try "+ str(attempts))
-            attempts += 1
+            Domoticz.Error("Error getting data from "+str(register) + ", try 2")
+
     return value
 
