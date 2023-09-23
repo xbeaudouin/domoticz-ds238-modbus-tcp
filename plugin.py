@@ -332,14 +332,16 @@ def getmodbus32(register, client):
     try:
         data = client.read_holding_registers(register, 2)
         Domoticz.Debug("Data from register "+str(register)+": "+str(data))
-        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        #decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.BIG, wordorder=Endian.BIG)
         value = decoder.decode_32bit_int()
     except:
         Domoticz.Error("Error getting data from "+str(register) + ", try 1")
         try:
             data = client.read_holding_registers(register, 2)
             Domoticz.Debug("Data from register "+str(register)+": "+str(data))
-            decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+            #decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+            decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.BIG, wordorder=Endian.BIG)
             value = decoder.decode_32bit_int()
         except:
             Domoticz.Error("Error getting data from "+str(register) + ", try 2")
@@ -352,14 +354,16 @@ def getmodbus16(register, client):
     try:
         data = client.read_holding_registers(register, 1)
         Domoticz.Debug("Data from register "+str(register)+": "+str(data))
-        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        #decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+        decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.BIG, wordorder=Endian.BIG)
         value = decoder.decode_16bit_int()
     except:
         Domoticz.Error("Error getting data from "+str(register) + ", try 1")
         try:
             data = client.read_holding_registers(register, 1)
             Domoticz.Debug("Data from register "+str(register)+": "+str(data))
-            decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+            #decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.Big, wordorder=Endian.Big)
+            decoder = BinaryPayloadDecoder.fromRegisters(data, byteorder=Endian.BIG, wordorder=Endian.BIG)
             value = decoder.decode_16bit_int()
         except:
             Domoticz.Error("Error getting data from "+str(register) + ", try 2")
